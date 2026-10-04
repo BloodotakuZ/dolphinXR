@@ -689,12 +689,14 @@ if(ENABLE_VR)
   set(BUILD_CONFORMANCE_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_SDK_TESTS OFF CACHE BOOL "" FORCE)
   set(DYNAMIC_LOADER OFF CACHE BOOL "" FORCE)
-  # Dolphin compiles with -fno-exceptions. Use the SDK's supported loader
-  # option instead of relying on an unpublished, locally patched submodule.
-  set(BUILD_LOADER_WITH_EXCEPTION_HANDLING OFF CACHE BOOL "" FORCE)
+  # The public SDK contains unconditional try/catch blocks even when its
+  # exception-handling option is disabled. Keep exceptions local to the loader;
+  # Dolphin itself still uses -fno-exceptions.
+  set(BUILD_LOADER_WITH_EXCEPTION_HANDLING ON CACHE BOOL "" FORCE)
   add_subdirectory(Externals/OpenXR "${CMAKE_BINARY_DIR}/Externals/OpenXR" EXCLUDE_FROM_ALL)
-  # nlohmann JSON uses a different macro from the SDK's bundled jsoncpp.
-  target_compile_definitions(openxr_loader PRIVATE JSON_USE_EXCEPTIONS=0)
+  target_compile_options(openxr_loader PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-fexceptions>"
+  )
 endif()
 
 if(NOT (WIN32 AND _M_ARM_64))

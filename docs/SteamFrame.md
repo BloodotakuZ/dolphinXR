@@ -43,8 +43,9 @@ distribution package remains a separate milestone.
 
 The OpenXR SDK is pinned to the public 1.1.63 release. The inherited gitlink
 referenced `a170408a4dc893da8b5cc3955455917603a4d305`, which the configured
-Khronos remote could not fetch. Loader exception handling is disabled in the
-parent CMake project to match Dolphin's `-fno-exceptions` build.
+Khronos remote could not fetch. Exceptions are enabled only for the SDK loader
+target: this release contains unconditional `try`/`catch` blocks, even with its
+exception-handling option disabled. Dolphin keeps its `-fno-exceptions` build.
 The inherited fmt gitlink also references an unavailable commit
 (`ebd44f36916fb4f02b9c83cba21aff294deea66a`); it is replaced with the public
 12.0.0 release. The remaining Linux dependency gitlinks were successfully
