@@ -17,6 +17,9 @@ use of AI tools.
 - **Meta Quest** — a standalone Android build (Quest 2, Quest 3, Quest 3S, and
   Quest Pro) renders natively in the headset on the Vulkan and OpenGL ES
   backends, with OpenXR controller support.
+- **Steam Frame (experimental)** — a native Linux ARM64 build profile using
+  Vulkan, OpenXR, and Dolphin's ARM64 JIT. See [build and deployment instructions](docs/SteamFrame.md).
+  Headset operation and performance are not yet hardware-validated.
 
 Please read the [FAQ](https://dolphin-emu.org/docs/faq/) before using Dolphin.
 

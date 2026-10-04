@@ -1,0 +1,35 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "steam-frame",
+      "displayName": "Steam Frame native Linux ARM64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/Build-steam-frame",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DISTRIBUTOR": "DolphinXR-SteamFrame",
+        "ENABLE_STEAM_FRAME": "ON",
+        "ENABLE_GENERIC": "OFF",
+        "ENABLE_VR": "ON",
+        "ENABLE_VULKAN": "ON",
+        "ENABLE_QT": "ON",
+        "ENABLE_HEADLESS": "OFF",
+        "ENABLE_NOGUI": "OFF",
+        "ENABLE_CLI_TOOL": "OFF",
+        "ENABLE_TESTS": "OFF",
+        "ENABLE_AUTOUPDATE": "OFF",
+        "USE_DISCORD_PRESENCE": "OFF",
+        "ENABLE_LLVM": "OFF",
+        "ENCODE_FRAMEDUMPS": "OFF",
+        "USE_MGBA": "OFF",
+        "USE_SYSTEM_MBEDTLS": "OFF",
+        "LINUX_LOCAL_DEV": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "steam-frame", "configurePreset": "steam-frame", "targets": ["dolphin-emu"] }
+  ]
+}

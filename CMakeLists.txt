@@ -94,6 +94,7 @@ option(ENABLE_LLVM "Enables LLVM support, for disassembly" ON)
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(ENABLE_VULKAN "Enables vulkan video backend" ON)
 option(ENABLE_VR "Enables VR support via OpenXR (Windows D3D/Vulkan/OpenGL, Linux Vulkan/OpenGL, Android Vulkan/GLES)" OFF)
+option(ENABLE_STEAM_FRAME "Validate the native Linux ARM64 Steam Frame build profile" OFF)
 option(USE_DISCORD_PRESENCE "Enables Discord Rich Presence, show the current game on Discord" ON)
 option(USE_MGBA "Enables GBA controllers emulation using libmgba" ON)
 option(ENABLE_AUTOUPDATE "Enables support for automatic updates" ON)
@@ -230,6 +231,10 @@ else()
   message(FATAL_ERROR "You're building on an unsupported platform: "
       "'${CMAKE_SYSTEM_PROCESSOR}' with ${CMAKE_SIZEOF_VOID_P}-byte pointers."
       " Enable generic build if you really want a JIT-less binary.")
+endif()
+
+if(ENABLE_STEAM_FRAME)
+  include(CMake/SteamFrame.cmake)
 endif()
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
@@ -684,7 +689,14 @@ if(ENABLE_VR)
   set(BUILD_CONFORMANCE_TESTS OFF CACHE BOOL "" FORCE)
   set(BUILD_SDK_TESTS OFF CACHE BOOL "" FORCE)
   set(DYNAMIC_LOADER OFF CACHE BOOL "" FORCE)
+  # The public SDK contains unconditional try/catch blocks even when its
+  # exception-handling option is disabled. Keep exceptions local to the loader;
+  # Dolphin itself still uses -fno-exceptions.
+  set(BUILD_LOADER_WITH_EXCEPTION_HANDLING ON CACHE BOOL "" FORCE)
   add_subdirectory(Externals/OpenXR "${CMAKE_BINARY_DIR}/Externals/OpenXR" EXCLUDE_FROM_ALL)
+  target_compile_options(openxr_loader PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-fexceptions>"
+  )
 endif()
 
 if(NOT (WIN32 AND _M_ARM_64))

@@ -1,0 +1,52 @@
+name: Steam Frame native ARM64
+
+on:
+  push:
+    branches: [openxr-work, steam-frame-native]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: steam-frame-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize Linux build dependencies
+        shell: bash
+        run: |
+          # Skip the large Windows-only binary submodules and Android-only tooling.
+          mapfile -t paths < <(git config -f .gitmodules --get-regexp path |
+            awk '$2 !~ /^Externals\/(Qt|FFmpeg-bin|libadrenotools|wil|spirv_cross\/)/ {print $2}')
+          git submodule update --init --recursive --jobs 4 -- "${paths[@]}"
+      - name: Install native development packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config \
+            qt6-base-dev qt6-base-private-dev qt6-svg-dev libgl-dev libegl-dev \
+            libx11-dev libxrandr-dev libxi-dev libudev-dev libevdev-dev \
+            libasound2-dev libpulse-dev libusb-1.0-0-dev libcurl4-openssl-dev \
+            libhidapi-dev libbluetooth-dev gettext
+      - name: Build and stage native application
+        run: bash Tools/build-steam-frame.sh
+      - name: Verify artifact architecture and command line
+        run: |
+          readelf -h dist/dolphinxr-steam-frame/dolphin-emu | grep 'Machine:.*AArch64'
+          test "$(uname -m)" = aarch64
+          ! grep -q 'not found' dist/dolphinxr-steam-frame/build-host-libraries.txt
+          QT_QPA_PLATFORM=offscreen dist/dolphinxr-steam-frame/dolphin-emu --help
+          bash dist/dolphinxr-steam-frame/launch-steam-frame.sh --check
+          tar -C dist -czf dist/dolphinxr-steam-frame-linux-arm64.tar.gz dolphinxr-steam-frame
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dolphinxr-steam-frame-linux-arm64
+          path: dist/dolphinxr-steam-frame-linux-arm64.tar.gz
+          if-no-files-found: error
+          retention-days: 14
